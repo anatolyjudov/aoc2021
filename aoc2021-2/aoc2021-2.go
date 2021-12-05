@@ -12,7 +12,7 @@ type Command struct {
     action string
     value int
 }
-    func (command *Command) parse(order string) (bool, error) {
+    func (command *Command) read(order string) (bool, error) {
         orderParts := strings.Split(order, " ")
         value, err := strconv.Atoi(orderParts[1])
         if err != nil {
@@ -96,20 +96,19 @@ func main() {
         command Command
         submarines [2]SubmarineInterface
     )
+    
     submarines[0] = &SimpleSubmarine{}
     submarines[1] = &AimedSubmarine{}
 
     for scanner.Scan() {
-        ok, err := command.parse(scanner.Text());
+        ok, err := command.read(scanner.Text());
         if !ok {
             panic(err);
         }
-
         for _, submarine := range submarines {
             submarine.do(command);
         }
     }
-
     for _, submarine := range submarines {
         fmt.Println(submarine.getTransition().calculate())
     }
