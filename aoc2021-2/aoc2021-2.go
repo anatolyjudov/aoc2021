@@ -8,6 +8,7 @@ import (
     "bufio"
 )
 
+// Submarine's command data structure and reader
 type Command struct {
     action string
     value int
@@ -26,6 +27,8 @@ type Command struct {
         return true, nil
     }
 
+// Transition data structure
+// The final result calculator is also here
 type Transition struct {
     horizontal, vertical int
 }
@@ -39,11 +42,13 @@ type Transition struct {
         return t.horizontal * t.vertical
     }
 
+// An interface for all kinds of submarines
 type SubmarineInterface interface {
     do(c Command)
     getTransition() Transition
 }
 
+// Simple submarine (first part of the day's task)
 type SimpleSubmarine struct {
     transition Transition
 }
@@ -61,6 +66,7 @@ type SimpleSubmarine struct {
         return s.transition;
     }
 
+// Aimed submarine (second part of the day's task)
 type AimedSubmarine struct {
     aim int
     transition Transition
@@ -80,6 +86,7 @@ type AimedSubmarine struct {
         return s.transition;
     }
 
+// File opening routine
 func openFile(filename string) *os.File {
     file, err := os.Open(filename)
     if err != nil {
@@ -88,6 +95,7 @@ func openFile(filename string) *os.File {
     return file
 }
 
+//
 func main() {
     file := openFile("./input.txt")
     scanner := bufio.NewScanner(file)
@@ -96,7 +104,7 @@ func main() {
         command Command
         submarines [2]SubmarineInterface
     )
-    
+
     submarines[0] = &SimpleSubmarine{}
     submarines[1] = &AimedSubmarine{}
 
