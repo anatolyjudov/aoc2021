@@ -7,80 +7,127 @@ import (
     "strings"
 )
 
-func apply(polymer string, subs *map[[2]byte]byte) string {
-    var newPolymer strings.Builder
+const task1steps = 10
+const task2steps = 40
 
-    polymerBytes := []byte(polymer)
+var (
+    subs map[[2]byte]byte
+    polymerBytes []byte
+    cache cachedPaths
+)
 
-    subss := *subs
-
-    for i := 0; i < len(polymerBytes); i++ {
-        if i > 0 {
-            pair := [2]byte{polymerBytes[i - 1], polymerBytes[i]}
-            if insert, ok := subss[pair]; ok {
-                newPolymer.WriteByte(insert)
-                newPolymer.WriteByte(polymerBytes[i])
-                continue
+type cachedPaths []KnownPath
+    func (cp *cachedPaths) search(chr1, chr2 byte, step int) (KnownPath, bool) {
+        for _, p := range *cp {
+            if p.pair == [2]byte{chr1, chr2} && p.step == step {
+                return p, true
             }
         }
-        newPolymer.WriteByte(polymerBytes[i])
+        return KnownPath{}, false
     }
 
-    return newPolymer.String()
+type KnownPath struct {
+    pair [2]byte
+    step int
+    counts Counts
 }
+    func (p *KnownPath) new(chr1, chr2 byte, step int) {
+        p.pair = [2]byte{chr1, chr2}
+        p.step = step
+        p.counts = make(map[byte]int)
+    }
 
-func task1count(polymer string) int {
-    var counts map[byte]int
-
-    counts = make(map[byte]int)
-
-    polymerBytes := []byte(polymer)
-    for i := 0; i < len(polymerBytes); i++ {
-        if c, ok := counts[polymerBytes[i]]; ok {
-            counts[polymerBytes[i]] = c + 1
+type Counts map[byte]int
+    func (counts Counts) add(chr byte) {
+        if c, ok := counts[chr]; ok {
+            counts[chr] = c + 1
         } else {
-            counts[polymerBytes[i]] = 1
+            counts[chr] = 1
+        }
+    }
+    func (counts Counts) calculate() int {
+        var (
+            max, min int
+        )
+        for _, count := range counts {
+            if count > max {
+                max = count
+            }
+            if min == 0 || count < min {
+                min = count
+            }
+        }
+        return max - min
+    }
+    func (c Counts) merge(path KnownPath) {
+        if path.step == 0 { // nil path
+            return
+        }
+        for chr, i := range path.counts {
+            if cm, ok := c[chr]; ok {
+                c[chr] = cm + i
+            } else {
+                c[chr] = i
+            }
         }
     }
 
-    var (
-        max, min int
-    )
-    for _, count := range counts {
-        if count > max {
-            max = count
-        }
-        if min == 0 || count < min {
-            min = count
+func dive(chr1 byte, chr2 byte, step int) KnownPath {
+    if step == 0 {
+        return KnownPath{}
+    }
+    // search for cached known path
+    if step > 3 {
+        if foundPath, found := cache.search(chr1, chr2, step); found {
+            return foundPath
         }
     }
 
-    return max - min
+    // if it wasn't found, let's dive in
+    var thisPath KnownPath
+    thisPath.new(chr1, chr2, step)
+    if insert, ok := subs[[2]byte{chr1, chr2}]; ok {
+        thisPath.counts.add(insert)
+        thisPath.counts.merge(dive(chr1, insert, step - 1))
+        thisPath.counts.merge(dive(insert, chr2, step - 1))
+    }
+    if step > 4 {
+        cache = append(cache, thisPath)
+    }
+    return thisPath
 }
 
 func main() {
 
-    polymer, subs := readInput()
+    readInput()
 
-    fmt.Println(polymer, subs)
+    var task1, task2 Counts
+    task1 = make(map[byte]int)
+    task2 = make(map[byte]int)
 
-    for step := 0; step < 40; step++ {
-        polymer = apply(polymer, &subs)
-        //fmt.Printf("\r\nStep %v:\r\n%v", step, polymer)
+    for i := 1; i < len(polymerBytes); i++ {
+        if i == 1 {
+            task1.add(polymerBytes[0])
+            task2.add(polymerBytes[0])
+        }
+        task1.add(polymerBytes[i])
+        task1.merge(dive(polymerBytes[i - 1], polymerBytes[i], task1steps))
+
+        task2.add(polymerBytes[i])
+        task2.merge(dive(polymerBytes[i - 1], polymerBytes[i], task2steps))
     }
-    
-    //fmt.Printf("\r\nFinal polymer:\r\n%v", polymer)
 
-    fmt.Printf("\r\nTask 1 count: %v", task1count(polymer))    
+    fmt.Printf("Task 1: %v\r\n", task1.calculate())
+    fmt.Printf("Task 2: %v\r\n", task2.calculate())
 }
 
 // read all input data
-func readInput() (template string, subs map[[2]byte]byte) {
+func readInput() {
     file := openFile("./input.txt")
     scanner := bufio.NewScanner(file)
     // template
     scanner.Scan()
-    template = scanner.Text()
+    polymerBytes = []byte(scanner.Text())
     // skip empty string
     scanner.Scan()
     // substitutions
