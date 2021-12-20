@@ -2,8 +2,8 @@ package main
 
 import (
     "fmt"
-    //"os"
-    //"bufio"
+    "os"
+    "bufio"
     //"strings"
     "strconv"
 )
@@ -93,37 +93,22 @@ func makeFishNum5() FishNum5 {
 }
 
 func main() {
+    fns := readInput()
 
-    var n1, n2, n3 FishNum5
-
-    n1 = makeFishNum5()
-    fmt.Println(n1)
-
-    n2 = makeFishNum5fromString("[[[[1,3],[5,3]],[[1,3],[8,7]]],[[[4,9],[6,9]],[[8,2],[7,3]]]]")
-    fmt.Println(n2)
-
-    n3 = makeFishNum5fromString("[[[[1,2],[3,4]],[[5,6],[7,8]]],9]")
-    fmt.Println(n3)
-
-/*
-    var n1, n2 FishNum
-
-    n1 = makeFishNum(3, 2)
-    n2 = makeFishNum(9, 1)
-    n3 := add(n1, n2)
-    n4 := add(n3, n2)
-    n5 := add(n4, n3)
-
-    n5.print()
-*/
+    for _, fn := range fns {
+        fmt.Println(fn)
+    }
 }
 
-/*
+
 // read all input data
-func readInput() {
+func readInput() (fns []FishNum5) {
     file := openFile("./input.txt")
     scanner := bufio.NewScanner(file)
-    input := scanner.Text()
+    for scanner.Scan() {
+        fns = append(fns, makeFishNum5fromString(scanner.Text()))
+    }
+    return
 }
 // file opening routine
 func openFile(filename string) *os.File {
@@ -133,7 +118,7 @@ func openFile(filename string) *os.File {
     }
     return file
 }
-*/
+
 func convInt(s string) int {
     value, err := strconv.Atoi(s)
     if err != nil {
