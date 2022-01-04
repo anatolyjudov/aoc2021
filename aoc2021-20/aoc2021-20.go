@@ -4,10 +4,6 @@ import (
     "fmt"
     "os"
     "bufio"
-//    "strings"
-//    "strconv"
-//    "math"
-//    "sort"
 )
 
 type Pattern [9]bool
@@ -122,9 +118,7 @@ type Image struct {
                 if (xP + x < 0) || (xP + x >= i.sizeX) || (yP + y < 0) || (yP + y >= i.sizeY) {
                     p[8 - (y + 1) * 3 - x - 1] = i.outerPixel
                 } else {
-                    //fmt.Printf("Getting point %d %d...", xP + x, yP + y)
                     p[8 - (y + 1) * 3 - x - 1] = i.pixels[(yP + y) * i.sizeX + (xP + x)]
-                    //fmt.Printf(" it's %v\r\n", p[(y + 1) * 3 + x + 1])
                 }
             }
         }
@@ -248,14 +242,3 @@ func openFile(filename string) *os.File {
     }
     return file
 }
-
-/*
-func convInt(s string) int {
-    value, err := strconv.Atoi(s)
-    if err != nil {
-        fmt.Println("Bad number given: %d", s)
-        panic("Fatal error when reading input file")
-    }
-    return value
-}
-*/
